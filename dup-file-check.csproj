@@ -10,7 +10,7 @@
     <PublishReadyToRun>true</PublishReadyToRun>
     <PublishSingleFile>true</PublishSingleFile>
     <DebugType>embedded</DebugType>
-    <AssemblyVersion>1.0</AssemblyVersion>
+    <AssemblyVersion>1.0.1</AssemblyVersion>
   </PropertyGroup>
 
 </Project>

@@ -1,11 +1,13 @@
-dotnet publish --sc -r win-x64 -c Release -o ./publish/win-x64/
-dotnet publish --sc -r win-x86 -c Release -o ./publish/win-x86/
-dotnet publish --sc -r win-arm -c Release -o ./publish/win-arm/
-dotnet publish --sc -r win-arm64 -c Release -o ./publish/win-arm64/
+$path = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$RID = "win-x64", "win-x86", "win-arm", "win-arm64", "linux-x64", "linux-musl-x64", "linux-arm", "linux-arm64", "osx-x64"
 
-dotnet publish --sc -r linux-x64 -c Release -o ./publish/linux-x64/
-dotnet publish --sc -r linux-musl-x64 -c Release -o ./publish/linux-musl-x64/
-dotnet publish --sc -r linux-arm -c Release -o ./publish/linux-arm/
-dotnet publish --sc -r linux-arm64 -c Release -o ./publish/linux-arm64/
+Set-Location -Path $path
+foreach ($item in $RID) {
+    dotnet publish --sc -r $item -c Release -o ./publish/$item/
+}
 
-dotnet publish --sc -r osx-x64 -c Release -o ./publish/osx-x64/
+Set-Location -Path "publish"
+foreach ($item in $RID) {
+    $cmd = 'tar -cvzf ' + $item + '.tar.gz ' + $item + '\dup-file-check*'
+    Invoke-Expression $cmd
+}

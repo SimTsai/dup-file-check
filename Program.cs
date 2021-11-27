@@ -1,5 +1,9 @@
 ﻿string? inputPath = null;
 string? outputPath = null;
+var excludes = new List<string>();
+var dict = new System.Collections.Concurrent.ConcurrentDictionary<string, List<string>>();
+var exDict = new System.Collections.Concurrent.ConcurrentDictionary<string, string>();
+using var stdOut = Console.OpenStandardOutput();
 
 if (args.Length > 0)
 {
@@ -25,6 +29,10 @@ if (args.Length > 0)
             outputPath = Path.Combine(pValue, $"{DateTime.Now:yyyyMMddHHmmss}.json");
             continue;
         }
+        else if (pName == "-e")
+        {
+            excludes.Add(pValue.ToUpper());
+        }
     }
 }
 else { ShowUsage(); return; }
@@ -35,15 +43,12 @@ Console.WriteLine($"dup file check start check path: {inputPath}");
 DirectoryInfo directoryInfo = new DirectoryInfo(inputPath);
 var allFiles = directoryInfo.GetFiles("*", new EnumerationOptions
 {
-    RecurseSubdirectories = true
+    RecurseSubdirectories = true,
 });
 
-using var stdOut = Console.OpenStandardOutput();
-
-System.Collections.Concurrent.ConcurrentDictionary<string, List<string>> dict = new System.Collections.Concurrent.ConcurrentDictionary<string, List<string>>();
-System.Collections.Concurrent.ConcurrentDictionary<string, string> exDict = new System.Collections.Concurrent.ConcurrentDictionary<string, string>();
-
-await Parallel.ForEachAsync(allFiles, async (fileInfo, ct) =>
+var act = allFiles.Where(fileInfo => !excludes.Any(p => fileInfo.FullName.ToUpper().Contains(p)));
+Console.WriteLine($"file count: {act.Count()}");
+await Parallel.ForEachAsync(act, async (fileInfo, ct) =>
 {
     try
     {
@@ -71,5 +76,6 @@ Console.WriteLine($"dup file check end result store: {outputPath}");
 void ShowUsage()
 {
     Console.WriteLine($"version {typeof(Program).Assembly.GetName().Version?.ToString(3)}");
-    Console.WriteLine("dup-file-check -p check-path -o output-path");
+    Console.WriteLine("dup-file-check <-p check-path> <-o output-path> [-e exclude] [-e exclude] ...");
+    Console.WriteLine("e.g. dup-file-check /volume1/photo -o ~/ -e @eaDir");
 }
